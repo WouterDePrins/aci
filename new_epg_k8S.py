@@ -5,28 +5,28 @@ import requests
 
 ###### Fill in below parameters ######
 
-username = '' #APIC Username
-password = '' #APIC Password
-epg = '' #New EPG Name
-tenant = '' #Kubernetes Tenant
-ap = '' #AP where you want this new EPG to be deployed
-baseUrl = "http://X.X.X.X/" #IP address of the APIC
-k8s_dom = "" #Kubernetes Domain name
+username = 'admin' #APIC Username
+password = 'Frisco123' #APIC Password
+epg = ['test', 'test2', 'test3'] #New EPG Name(s) ['epg-a', 'epg-b', 'epg-c']
+tenant = 'wouter_k8s' #Kubernetes Tenant
+ap = 'kubernetes' #AP where you want this new EPG to be deployed
+baseUrl = "http://10.48.108.214/" #IP address of the APIC
+k8s_dom = "wouter_k8s" #Kubernetes Domain name
 
 ######################################
 
 def login():
-  payload = {
-    "aaaUser": {
-      "attributes": 
-        {
-            "name" : username,
-            "pwd" : password 
-        }
-    }
-  }
+	payload = {
+		"aaaUser": {
+			"attributes": 
+			{
+				"name": username,
+				"pwd": password 
+			}
+		}
+	}
 
-  login = baseUrl + "api/aaaLogin.json"
+	login = baseUrl + "api/aaaLogin.json"
 	request = requests.request("POST", login, json = payload)
 	pretty = json.loads(request.text)
 	return pretty['imdata'][0]['aaaLogin']['attributes']['token']
@@ -34,60 +34,61 @@ def login():
 def header():
 	token = login()
 	headers = {
- 	 'Cookie': 'APIC-cookie=' + token
+		'Cookie': 'APIC-cookie=' + token
 	}
 	return headers
-}
 
 def createEpg():
-	url = baseUrl + "api/node/mo/uni/tn-" + tenant + "/ap-" + ap + "/epg-" + epg + ".json"
-	payload =  {
-	  "fvAEPg": {
-	    "attributes": {
-	      "dn": "uni/tn-" + tenant + "/ap-" + ap + "/epg-" + epg,
-	      "name": epg,
-	      "rn": "epg-" + epg,
-	      "status": "created"
-	    },
-	    "children": [
-	      {
-	        "fvRsBd": {
-	          "attributes": {
-	            "tnFvBDName": "kube-pod-bd",
-	            "status": "created,modified"
-	          },
-	          "children": []
-	        }
-	      },
-	      {
-	        "fvRsSecInherited": {
-	          "attributes": {
-	            "tDn": "uni/tn-" + tenant + "/ap-" + ap + "/epg-kube-default",
-	            "status": "created"
-	          },
-	          "children": []
-	        }
-	      },
-	      {
-	        "fvRsDomAtt": {
-	          "attributes": {
-	            "resImedcy": "immediate",
-	            "tDn": "uni/vmmp-Kubernetes/dom-" + k8s_dom,
-	            "status": "created"
-	          },
-	          "children": [
-	            {
-	              "vmmSecP": {
-	                "attributes": {
-	                  "status": "created"
-	                },
-	                "children": []
-	              }
-	            }
-	          ]
-	        }
-	      }
-	    ]
-	  }
-	}
-	response = requests.request("POST", url, json=payload, headers = header(), verify=False)
+	for i in epg:
+		url = baseUrl + "api/node/mo/uni/tn-" + tenant + "/ap-" + ap + "/epg-" + i + ".json"
+		payload =  {
+			"fvAEPg": {
+				"attributes": {
+					"dn": "uni/tn-" + tenant + "/ap-" + ap + "/epg-" + i,
+					"name": i,
+					"rn": "epg-" + i,
+					"status": "created"
+				},
+				"children": [
+					{
+						"fvRsBd": {
+							"attributes": {
+							"tnFvBDName": "kube-pod-bd",
+							"status": "created,modified"
+						},
+					"children": []
+					}
+				},
+				{
+					"fvRsSecInherited": {
+						"attributes": {
+							"tDn": "uni/tn-" + tenant + "/ap-" + ap + "/epg-kube-default",
+							"status": "created"
+						},
+					"children": []
+					}
+				},
+				{
+					"fvRsDomAtt": {
+						"attributes": {
+							"resImedcy": "immediate",
+							"tDn": "uni/vmmp-Kubernetes/dom-" + k8s_dom,
+							"status": "created"
+						},
+						"children": [
+						{
+							"vmmSecP": {
+								"attributes": {
+									"status": "created"
+								},
+								"children": []
+							}
+						}]
+						
+					}
+				}]
+			}
+		}
+		response = requests.request("POST", url, json=payload, headers = header(), verify=False)
+
+createEpg()
