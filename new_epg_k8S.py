@@ -6,11 +6,11 @@ import requests
 ###### Fill in below parameters ######
 
 username = 'admin' #APIC Username
-password = 'Frisco123' #APIC Password
+password = 'password' #APIC Password
 epg = ['test', 'test2', 'test3'] #New EPG Name(s) ['epg-a', 'epg-b', 'epg-c']
-tenant = 'wouter_k8s' #Kubernetes Tenant
+tenant = 'tenant' #Kubernetes Tenant
 ap = 'kubernetes' #AP where you want this new EPG to be deployed
-baseUrl = "http://10.48.108.214/" #IP address of the APIC
+baseUrl = "http://X.X.X.X/" #IP address of the APIC
 k8s_dom = "wouter_k8s" #Kubernetes Domain name
 
 ######################################
