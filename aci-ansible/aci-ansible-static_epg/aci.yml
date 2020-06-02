@@ -1,0 +1,66 @@
+# ///// Script created by Wouter De Prins - SE @ Cisco /////
+---
+- name: Create Bridge Domain, EPG & Add Static Binding to Interface
+  hosts:  localhost
+  connection: local
+  gather_facts: no
+  vars:
+    aci_login: &aci_login
+      hostname: '{{ apic.hostname }}'
+      username: '{{ apic.username }}'
+      password: '{{ apic.password }}'
+      validate_certs: no  
+      tenant: '{{ params.tenant_name }}'
+
+  vars_files:
+    - '{{ playbook_dir }}/files/passwords.yml' 
+    - '{{ playbook_dir }}/files/params.yml'              
+
+  tasks:
+    - name: 1. Create new bridge domain
+      aci_bd:
+        <<: *aci_login
+        bd: '{{ params.bd_name }}'  
+        state: present
+      tags: 
+        - bd
+
+    - name: 2. Create new subnet
+      aci_bd_subnet:
+        <<: *aci_login
+        bd: '{{ params.bd_name }}'
+        gateway: '{{ params.bd_subnet_gateway }}'
+        mask: '{{ params.bd_subnet_mask }}'
+        state: present
+      tags: 
+        - subnet 
+
+    - name: 3. Create EPG's and add to the Application Profile
+      aci_epg:
+        <<: *aci_login
+        ap: '{{ params.ap_name }}'
+        epg: '{{ item.name }}'
+        description: '{{ item.description }}'
+        bd: '{{ params.bd_name }}'  
+        preferred_group: yes
+        state: present
+      loop: "{{ params.epglist }}"
+      tags: 
+        - epg      
+   
+    - name: 4. Deploy Static Path binding for given EPG
+      aci_static_binding_to_epg:
+        <<: *aci_login
+        ap: '{{ params.ap_name }}'
+        epg: '{{ item.name }}'
+        encap_id: '{{ item.static_encap_id }}'
+        deploy_immediacy: '{{ item.static_deploy_immediacy }}'
+        interface_mode: '{{ item.static_interface_mode }}'
+        interface_type: '{{ item.static_interface_type }}'
+        pod_id: '{{ item.static_pod_id }}'
+        leafs: '{{ item.static_leafs }}'
+        interface: '{{ item.static_interface }}'
+        state: present
+      loop: "{{ params.epglist }}" #loop over the epgs
+      tags: 
+        - static      
