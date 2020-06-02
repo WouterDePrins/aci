@@ -1,0 +1,27 @@
+---
+
+params:
+
+  ######### Tenant Name #########
+  tenant_name: ''
+
+  ######### Application Profile Name #########
+  ap_name: ''
+
+  ######### Bridge Domain & Subnet   #########
+  bd_name: ''
+  bd_subnet_gateway: '' #for example 10.1.2.254
+  bd_subnet_mask: '' # for example 24
+
+  ######### End Point Groups with static binding to interface #########
+  epglist:
+  - name: ''
+    description: ''
+    static_encap_id:  # VLAN ID integer
+    static_deploy_immediacy: # immediate or lazy
+    static_interface_mode: # 802.1p, access, native, regular, tagged, trunk or untagged
+    static_interface_type: # switch_portfex, port_channel, switch_port or vpc
+    static_pod_id: # POD ID integer
+    static_leafs: # LEAF ID integer
+    static_interface: ''  # for example 1/37
+    
